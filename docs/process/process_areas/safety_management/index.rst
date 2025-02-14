@@ -45,7 +45,8 @@ Stakeholders
 
 #. :need:`Safety Manager <RL__safety_manager>`
 
-   * he is the main responsible for the safety management work products. See his role definition.
+   * he is the main responsible for the safety management work products (as in :doc:`workproducts`).
+     See also his role definition in :doc:`roles`.
 
 #. :need:`External Auditor <RL__external_auditor>`
 
@@ -77,7 +78,7 @@ Apart from the safety plans the main work products of safety management are (see
 Safety Management Tooling
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For the safety planning and safety manual, spinx-needs will be used for referencing.
+For the safety planning and safety manual, sphinx-needs will be used for referencing.
 
 For the activities planning (who, when) we use github issues and monitor these in github projects.
 
