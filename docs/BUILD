@@ -199,6 +199,7 @@ score_py_pytest(
     srcs = glob(["_tooling/extensions/header_service/test/**/*.py"]),
     visibility = ["//visibility:public"],
     deps = [":header_service"],
+)
 
 filegroup(
     name = "requirements_lock",
