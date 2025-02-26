@@ -39,12 +39,12 @@ class TestTraceability:
             id="TOOL_REQ__1",
             status="valid",
             satisfies=[
-                "FEAT_REQ__2",
+                "feat_req__2",
             ],
         )
 
         need_2 = tests.need(
-            id="FEAT_REQ__2",
+            id="feat_req__2",
             status="valid",
             satisfies=[
                 "TOOL_REQ__1",
@@ -53,7 +53,7 @@ class TestTraceability:
         needs = [need_1, need_2]
 
         check_linkage_parent(needs, logger)
-        assert not logger.has_warnings
+        logger.assert_no_warnings()
 
     def test_check_linkage_parent_negative(self):
         logger = tests.fake_check_logger()
@@ -62,7 +62,7 @@ class TestTraceability:
             id="TOOL_REQ__1",
             status="valid",
             satisfies=[
-                "FEAT_REQ__2",
+                "feat_req__2",
             ],
         )
 
@@ -70,9 +70,8 @@ class TestTraceability:
 
         check_linkage_parent(needs, logger)
 
-        tests.verify_log_string(
-            logger,
-            f"has a parent requirement(s): `{need_1["satisfies"][0]}` with an invalid status.",
+        logger.assert_warning(
+            f"has a parent requirement(s): `{need_1['satisfies'][0]}` with an invalid status.",
             expect_location=False,
         )
 
@@ -84,21 +83,21 @@ class TestTraceability:
             status="valid",
             safety="QM",
             satisfies=[
-                "FEAT_REQ__2",
+                "feat_req__2",
             ],
         )
 
         need_2 = tests.need(
-            id="FEAT_REQ__2",
+            id="feat_req__2",
             status="valid",
             safety="QM",
             satisfies=[
-                "STKH_REQ__3",
+                "stkh_req__communication__intra_process",
             ],
         )
 
         need_3 = tests.need(
-            id="STKH_REQ__3",
+            id="stkh_req__communication__intra_process",
             status="valid",
             safety="QM",
         )
@@ -106,21 +105,21 @@ class TestTraceability:
         needs = [need_1, need_2, need_3]
 
         check_linkage_safety(needs, logger)
-        assert not logger.has_warnings
+        logger.assert_no_warnings()
 
     def test_check_linkage_safety_negative_ASIL_D(self):
         logger = tests.fake_check_logger()
 
         need_1 = tests.need(
-            id="FEAT_REQ__1",
+            id="feat_req__1",
             safety="ASIL_D",
             satisfies=[
-                "STKH_REQ__2",
+                "stkh_req__communication__inter_process",
             ],
         )
 
         need_2 = tests.need(
-            id="STKH_REQ__2",
+            id="stkh_req__communication__inter_process",
             status="valid",
             safety="ASIL_B",
         )
@@ -128,8 +127,7 @@ class TestTraceability:
         needs = [need_1, need_2]
 
         check_linkage_safety(needs, logger)
-        tests.verify_log_string(
-            logger,
+        logger.assert_warning(
             f"with `{need_1['safety']}` has no parent requirement that contains the same or lower ASIL. Allowed ASIL values: `ASIL_D`.",
             expect_location=False,
         )
@@ -140,22 +138,21 @@ class TestTraceability:
         logger = tests.fake_check_logger()
 
         need_1 = tests.need(
-            id="FEAT_REQ__1",
+            id="feat_req__1",
             safety="ASIL_B",
             satisfies=[
-                "STKH_REQ__2",
+                "stkh_req__communication__inter_process",
             ],
         )
 
         need_2 = tests.need(
-            id="STKH_REQ__2",
+            id="stkh_req__communication__inter_process",
             safety="QM",
         )
         needs = [need_1, need_2]
 
         check_linkage_safety(needs, logger)
-        tests.verify_log_string(
-            logger,
+        logger.assert_warning(
             f"with `{need_1['safety']}` has no parent requirement that contains the same or lower ASIL. Allowed ASIL values: `ASIL_B`, `ASIL_D`.",
             expect_location=False,
         )
@@ -169,18 +166,18 @@ class TestTraceability:
             id="TOOL_REQ__1",
             status="valid",
             satisfies=[
-                "FEAT_REQ__2",
+                "feat_req__2",
             ],
         )
 
         need_2 = tests.need(
-            id="FEAT_REQ__2",
+            id="feat_req__2",
             status="valid",
         )
         needs = [need_1, need_2]
 
         check_linkage_status(needs, logger)
-        assert not logger.has_warnings
+        logger.assert_no_warnings()
 
     def test_check_linkage_status_negative(self):
         needs = {}
@@ -190,28 +187,27 @@ class TestTraceability:
         need_1 = tests.need(
             id="TOOL_REQ__001",
             status="valid",
-            satisfies=["FEAT_REQ__2"],
+            satisfies=["feat_req__2"],
         )
 
         need_2 = tests.need(
-            id="FEAT_REQ__2",
+            id="feat_req__2",
             status="valid",
             satisfies=[
-                "FEAT_REQ__3",
+                "feat_req__3",
             ],
         )
         need_3 = tests.need(
-            id="FEAT_REQ__3",
+            id="feat_req__3",
             status="invalid",
             satisfies=[
-                "FEAT_REQ__4",
+                "feat_req__4",
             ],
         )
         needs = [need_1, need_2, need_3]
         check_linkage_status(needs, logger)
 
-        tests.verify_log_string(
-            logger,
-            "has a valid status but one of its parents: `FEAT_REQ__3` has an invalid status.",
+        logger.assert_warning(
+            "has a valid status but one of its parents: `feat_req__3` has an invalid status.",
             expect_location=False,
         )

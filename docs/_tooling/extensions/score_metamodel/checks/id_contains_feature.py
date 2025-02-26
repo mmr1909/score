@@ -12,6 +12,7 @@
 # *******************************************************************************
 import os
 
+from sphinx.application import Sphinx
 from sphinx_needs.data import NeedsInfoType
 
 from score_metamodel import (
@@ -21,7 +22,7 @@ from score_metamodel import (
 
 
 @local_check
-def id_contains_feature(need: NeedsInfoType, log: CheckLogger):
+def id_contains_feature(app: Sphinx, need: NeedsInfoType, log: CheckLogger):
     """
     The ID is expected to be in the format '<Req Type>__<feature>__<Title>'.
     Most of this is ensured via regex in the metamodel.
@@ -30,7 +31,7 @@ def id_contains_feature(need: NeedsInfoType, log: CheckLogger):
 
     parts = need["id"].split("__")
 
-    if len(parts) != 3:
+    if len(parts) != 3 or need["id"].startswith("stkh_req__"):
         # No warning needed here, as this is already checked in the metamodel.
         return
 

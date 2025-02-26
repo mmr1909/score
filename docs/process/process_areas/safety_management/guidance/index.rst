@@ -1,6 +1,6 @@
 ..
    # *******************************************************************************
-   # Copyright (c) 2024 Contributors to the Eclipse Foundation
+   # Copyright (c) 2025 Contributors to the Eclipse Foundation
    #
    # See the NOTICE file(s) distributed with this work for additional
    # information regarding copyright ownership.
@@ -12,14 +12,19 @@
    # SPDX-License-Identifier: Apache-2.0
    # *******************************************************************************
 
-.. _requirement_guidance:
-
-######################
- Requirement Guidance
-######################
+Guidance
+########
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
-   requirement_template.rst
+   guideline_safety_management.rst
+   guideline_component_classification.rst
+   template_feature_safety_wp.rst
+   template_module_safety_plan.rst
+   template_component_classification.rst
+   template_safety_manual.rst
+   checklist_safety_plan_cmr.rst
+   checklist_safety_case_cmr.rst
+   process_req.rst

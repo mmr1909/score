@@ -11,14 +11,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
 
-from sphinx.util.logging import SphinxLoggerAdapter
 from sphinx_needs.data import NeedsInfoType
 
 from docs._tooling.extensions.score_metamodel.checks import standards
-from docs._tooling.extensions.score_metamodel.tests import (
-    fake_check_logger,
-    verify_log_string,
-)
+from docs._tooling.extensions.score_metamodel.tests import fake_check_logger
 
 
 class TestStandards:
@@ -29,7 +25,7 @@ class TestStandards:
 
         need_1 = NeedsInfoType(
             target_id="Traceability of safety requirements",
-            id="STD_REQ_ISO26262__rq-8-6432",
+            id="STD_REQ__ISO26262__rq-8-6432",
             reqtype="Functional",
             status="valid",
             docname=None,
@@ -41,10 +37,10 @@ class TestStandards:
             id="GD_REQ__attribute_satisfies",
             tags="attribute",
             security="NO",
-            type="Process Requirements",
+            type="gd_req",
             complies=[
-                "STD_REQ_ISO26262__rq-8-6432",
-                "STD_REQ_ISO26262__rq-8-6422",
+                "STD_REQ__ISO26262__rq-8-6432",
+                "STD_REQ__ISO26262__rq-8-6422",
             ],
             status="valid",
             satisfies=[
@@ -61,7 +57,7 @@ class TestStandards:
         standards.check_all_standard_req_linked_item_via_the_compliance_req(
             needs, logger
         )
-        assert not logger.has_warnings
+        logger.assert_no_warnings()
 
     def test_check_standard_req_linked_item_via_the_compliance_req_negative(self):
         """
@@ -70,7 +66,7 @@ class TestStandards:
 
         need_1 = NeedsInfoType(
             target_id="Traceability of safety requirements",
-            id="STD_REQ_ISO26262__rq-8-6432",
+            id="STD_REQ__ISO26262__rq-8-6432",
             reqtype="Functional",
             status="valid",
             docname=None,
@@ -80,12 +76,12 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Requirements attribute satisfies",
             id="GD_REQ__attribute_satisfies",
-            type="Process Requirements",
+            type="gd_req",
             tags="attribute",
             security="NO",
             complies=[
-                "STD_REQ_ISO26262__rq-8-0000",
-                "STD_REQ_ISO26262__rq-8-1111",
+                "STD_REQ__ISO26262__rq-8-0000",
+                "STD_REQ__ISO26262__rq-8-1111",
             ],
             status="valid",
             satisfies=[
@@ -102,9 +98,7 @@ class TestStandards:
         standards.check_all_standard_req_linked_item_via_the_compliance_req(
             needs, logger
         )
-        assert logger.has_warnings
-        verify_log_string(
-            logger,
+        logger.assert_warning(
             f"Standard requirement `{need_1['id']}` is not linked to at least one item via the complies tag.",
             expect_location=False,
         )
@@ -118,22 +112,22 @@ class TestStandards:
 
         need_1 = NeedsInfoType(
             target_id="Organization-specific rules and processes for functional safety",
-            id="STD_WP_ISO26262__WP-2-551",
+            id="STD_WP__ISO26262__WP-2-551",
             status="valid",
             docname=None,
             lineno=None,
         )
 
         need_2 = NeedsInfoType(
-            target_id="WP_POLICIES",
-            id="WP_POLICIES",
+            target_id="wp__policies",
+            id="wp__policies",
             type="workproduct",
             status="draft",
             tags="requirements_management",
             relevant="PH_SPR_PLAN",
             complies=[
-                "STD_WP_ISO26262__WP-2-551",
-                "STD_REQ_ISO26262__WP-05-01",
+                "STD_WP__ISO26262__WP-2-551",
+                "STD_REQ__ISO26262__WP-05-01",
             ],
             docname=None,
             lineno=None,
@@ -146,7 +140,7 @@ class TestStandards:
         standards.check_all_standard_workproducts_linked_item_via_the_compliance_wp(
             needs, logger
         )
-        assert not logger.has_warnings
+        logger.assert_no_warnings()
 
     def test_check_standard_workproducts_linked_item_via_the_compliance_wp_negative(
         self,
@@ -157,19 +151,19 @@ class TestStandards:
 
         need_1 = NeedsInfoType(
             target_id="Organization-specific rules and processes for functional safety",
-            id="STD_WP_ISO26262__wp-2-551",
+            id="STD_WP__ISO26262__wp-2-551",
             status="valid",
             docname=None,
             lineno=None,
         )
 
         need_2 = NeedsInfoType(
-            target_id="WP_POLICIES",
-            id="WP_POLICIES",
+            target_id="wp__policies",
+            id="wp__policies",
             type="workproduct",
             status="draft",
             complies=[
-                "STD_WP_ISO26262__wp-2-777",
+                "STD_WP__ISO26262__wp-2-777",
                 "STD_REQ__iso21434__wp-05-88",
             ],
             docname=None,
@@ -184,8 +178,7 @@ class TestStandards:
             needs, logger
         )
 
-        verify_log_string(
-            logger,
+        logger.assert_warning(
             f"Standard workproduct `{need_1['id']}` is not linked to at least one item via the complies tag.",
             expect_location=False,
         )
@@ -197,13 +190,13 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY_PLAN",
+            id="wp__module_safety_plan",
             status="valid",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -212,16 +205,16 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Create/Maintain Safety Plan",
             type="workflow",
-            id="WF_CR_MT_SAFETY_PLAN",
+            id="WF__CR_MT_SAFETY_PLAN",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_MODULE_SAFETY_PLAN", "WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__module_safety_plan", "wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,
@@ -232,7 +225,7 @@ class TestStandards:
         logger = fake_check_logger()
 
         standards.check_workproduct_uniqueness_over_workflows(needs, logger)
-        assert not logger.has_warnings
+        logger.assert_no_warnings()
 
     def test_check_workproduct_uniqueness_over_workflows_negative_wprkproduct_not_listed_in_any_workflow(
         self,
@@ -244,14 +237,14 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY_PLAN",
+            id="wp__module_safety_plan",
             status="valid",
             relevant="PH_SPR_PLAN",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -260,16 +253,16 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Create/Maintain Safety Plan",
             type="workflow",
-            id="WF_CR_MT_SAFETY_PLAN",
+            id="WF__CR_MT_SAFETY_PLAN",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,
@@ -281,8 +274,7 @@ class TestStandards:
 
         standards.check_workproduct_uniqueness_over_workflows(needs, logger)
 
-        verify_log_string(
-            logger,
+        logger.assert_warning(
             "is not contained in any workflow, which is incorrect.",
             expect_location=False,
         )
@@ -297,13 +289,13 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY_PLAN",
+            id="wp__module_safety_plan",
             status="valid",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -314,14 +306,14 @@ class TestStandards:
             type="workflow",
             id="WF__CR_MT_SAFETY_PLAN",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_MODULE_SAFETY_PLAN", "WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__module_safety_plan", "wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,
@@ -330,12 +322,12 @@ class TestStandards:
         need_3 = NeedsInfoType(
             target_id="Review/Approve Contribution request",
             type="workflow",
-            id="WF_RV_AP_ContrRequest",
+            id="WF__RV_AP_ContrRequest",
             status="valid",
-            input=["WP_CONT_REQUEST"],
-            output=["WP_MODULE_SAFETY_PLAN", "WP_CONT_REQUEST"],
+            input=["wp__cont_request"],
+            output=["wp__module_safety_plan", "wp__cont_request"],
             contains=[
-                "STD_REQ_ISO26262__rq-8-8411",
+                "STD_REQ__ISO26262__rq-8-8411",
                 "STD_REQ__isoPAS8926__rq-4431",
                 "STD_REQ__isoPAS8926__rq-44321",
                 "STD_REQ__isoPAS8926__rq-44322",
@@ -355,8 +347,7 @@ class TestStandards:
 
         ids = [need_2["id"], need_3["id"]]
         workflows_str = ", ".join(f"`{id}`" for id in ids)
-        verify_log_string(
-            logger,
+        logger.assert_warning(
             f"is contained in {2} workflows: {workflows_str}, which is incorrect.",
             expect_location=False,
         )
@@ -369,7 +360,7 @@ class TestStandards:
 
         need_1 = NeedsInfoType(
             target_id="Traceability of safety requirements",
-            id="STD_REQ_ISO26262__rq-8-6432",
+            id="STD_REQ__ISO26262__rq-8-6432",
             reqtype="Functional",
             status="valid",
             docname=None,
@@ -378,7 +369,7 @@ class TestStandards:
 
         need_2 = NeedsInfoType(
             target_id="Traceability",
-            id="STD_REQ_ISO26262__rq-8-0000",
+            id="STD_REQ__ISO26262__rq-8-0000",
             reqtype="Functional",
             status="valid",
             docname=None,
@@ -390,10 +381,10 @@ class TestStandards:
             id="GD_REQ__attribute_satisfies",
             tags="attribute",
             security="NO",
-            type="Process Requirements",
+            type="gd_req",
             complies=[
-                "STD_REQ_ISO26262__rq-8-6432",
-                "STD_REQ_ISO26262__rq-8-6422",
+                "STD_REQ__ISO26262__rq-8-6432",
+                "STD_REQ__ISO26262__rq-8-6422",
             ],
             status="valid",
             satisfies=[
@@ -416,7 +407,8 @@ class TestStandards:
             1,
             1,
         ], f"For function my_pie_linked_standard_requirements expected [1, 1] but got {
-                results}"
+            results
+        }"
 
     def test_my_pie_linked_standard_workproducts(self):
         """
@@ -425,7 +417,7 @@ class TestStandards:
 
         need_1 = NeedsInfoType(
             target_id="Organization-specific rules and processes for functional safety",
-            id="STD_WP_ISO26262__wp-2-551",
+            id="STD_WP__ISO26262__wp-2-551",
             status="valid",
             docname=None,
             lineno=None,
@@ -433,19 +425,19 @@ class TestStandards:
 
         need_2 = NeedsInfoType(
             target_id="specific rules for processes",
-            id="STD_WP_ISO26262__wp-2-0000",
+            id="STD_WP__ISO26262__wp-2-0000",
             status="valid",
             docname=None,
             lineno=None,
         )
 
         need_3 = NeedsInfoType(
-            target_id="WP_POLICIES",
-            id="WP_POLICIES",
+            target_id="wp__policies",
+            id="wp__policies",
             status="draft",
             type="workproduct",
             complies=[
-                "STD_WP_ISO26262__wp-2-551",
+                "STD_WP__ISO26262__wp-2-551",
                 "STD_REQ__iso21434_wp-05-01",
             ],
             docname=None,
@@ -465,7 +457,8 @@ class TestStandards:
             1,
             1,
         ], f"For function my_pie_linked_standard_workproducts expected [1, 1] but got {
-                results}"
+            results
+        }"
 
     def test_my_pie_workproducts_contained_in_exactly_one_workflow(self):
         """
@@ -475,13 +468,13 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY_PLAN",
+            id="wp__module_safety_plan",
             status="valid",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -490,16 +483,16 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Create/Maintain Safety Plan",
             type="workflow",
-            id="WF_CR_MT_SAFETY_PLAN",
+            id="WF__CR_MT_SAFETY_PLAN",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_MODULE_SAFETY_PLAN", "WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__module_safety_plan", "wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,
@@ -508,13 +501,13 @@ class TestStandards:
         need_3 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE",
+            id="wp__module",
             status="valid",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -523,12 +516,12 @@ class TestStandards:
         need_4 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY",
+            id="wp__module_safety",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -537,16 +530,16 @@ class TestStandards:
         need_5 = NeedsInfoType(
             target_id="Create/Maintain Safety Plan",
             type="workflow",
-            id="WF_CR_MT_SAFETY",
+            id="WF__CR_MT_SAFETY",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_MODULE_SAFETY", "WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__module_safety", "wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,
@@ -555,12 +548,12 @@ class TestStandards:
         need_6 = NeedsInfoType(
             target_id="Review/Approve Contribution request",
             type="workflow",
-            id="WF_RV_AP_ContrRequest",
+            id="WF__RV_AP_ContrRequest",
             status="valid",
-            input=["WP_CONT_REQUEST"],
-            output=["WP_MODULE_SAFETY", "WP_CONT_REQUEST"],
+            input=["wp__cont_request"],
+            output=["wp__module_safety", "wp__cont_request"],
             contains=[
-                "STD_REQ_ISO26262__rq-8-8411",
+                "STD_REQ__ISO26262__rq-8-8411",
                 "STD_REQ__isoPAS8926__rq-4431",
                 "STD_REQ__isoPAS8926__rq-44321",
                 "STD_REQ__isoPAS8926__rq-44322",
@@ -584,7 +577,8 @@ class TestStandards:
         assert (
             results == [1, 1, 1]
         ), f"For function my_pie_workproducts_contained_in_exactly_one_workflow expected [1, 1, 1] but got {
-                results}"
+            results
+        }"
 
     def test_get_standards_needs(self):
         """
@@ -592,7 +586,7 @@ class TestStandards:
         """
         need_1 = NeedsInfoType(
             target_id="Traceability of safety requirements",
-            id="STD_REQ_ISO26262__rq-8-6432",
+            id="STD_REQ__ISO26262__rq-8-6432",
             reqtype="Functional",
             status="valid",
             docname=None,
@@ -620,7 +614,7 @@ class TestStandards:
         """
         need_1 = NeedsInfoType(
             target_id="Organization-specific rules and processes for functional safety",
-            id="STD_WP_ISO26262__wp-2-551",
+            id="STD_WP__ISO26262__wp-2-551",
             status="valid",
             docname=None,
             lineno=None,
@@ -653,8 +647,8 @@ class TestStandards:
             tags="attribute",
             security="NO",
             complies=[
-                "STD_REQ_ISO26262__rq-8-6666",
-                "STD_REQ_ISO26262__rq-8-6777",
+                "STD_REQ__ISO26262__rq-8-6666",
+                "STD_REQ__ISO26262__rq-8-6777",
             ],
             status="valid",
             satisfies=[
@@ -667,11 +661,11 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Requirements attribute satisfies",
             id="GD_REQ__attribute_satisfies",
-            type="Process Requirements",
+            type="gd_req",
             tags="attribute",
             security="NO",
             complies=[
-                "STD_WP_ISO26262__wp-2-551",
+                "STD_WP__ISO26262__wp-2-551",
                 "STD_WP__iso21434_wp-05-01",
             ],
             status="valid",
@@ -696,12 +690,12 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Requirements attribute satisfies_1",
             id="GD_REQ__attribute_satisfies",
-            type="Process Requirements",
+            type="gd_req",
             tags="attribute",
             security="NO",
             complies=[
-                "STD_REQ_ISO26262__rq-8-6432",
-                "STD_REQ_ISO26262__rq-8-6422",
+                "STD_REQ__ISO26262__rq-8-6432",
+                "STD_REQ__ISO26262__rq-8-6422",
             ],
             status="valid",
             satisfies=["GD__create_maintain_requirements"],
@@ -711,13 +705,13 @@ class TestStandards:
 
         need_2 = NeedsInfoType(
             target_id="Requirements attribute satisfies",
-            id="WP__attribute_satisfies_2",
+            id="wp__attribute_satisfies_2",
             type="workproduct",
             tags="attribute",
             security="NO",
             complies=[
-                "STD_WP_ISO26262__rq-8-6666",
-                "STD_WP_ISO26262__rq-8-6777",
+                "STD_WP__ISO26262__rq-8-6666",
+                "STD_WP__ISO26262__rq-8-6777",
             ],
             status="valid",
             satisfies=["GD__create_maintain_requirements"],
@@ -738,13 +732,13 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY_PLAN",
+            id="wp__module_safety_plan",
             status="valid",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -753,16 +747,16 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Create/Maintain Safety Plan",
             type="workflow",
-            id="WF_CR_MT_SAFETY_PLAN",
+            id="WF__CR_MT_SAFETY_PLAN",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_MODULE_SAFETY_PLAN", "WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__module_safety_plan", "wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,
@@ -782,13 +776,13 @@ class TestStandards:
         need_1 = NeedsInfoType(
             target_id="Module Safety Plan",
             type="workproduct",
-            id="WP_MODULE_SAFETY_PLAN",
+            id="wp__module_safety_plan",
             status="valid",
             complies=[
-                "STD_WP_ISO26262__wp-2-653",
-                "STD_WP_ISO26262__wp-8-853",
-                "STD_WP_ISO26262__wp-8-1251",
-                "STD_WP_ISO26262__wp-8-1252",
+                "STD_WP__ISO26262__wp-2-653",
+                "STD_WP__ISO26262__wp-8-853",
+                "STD_WP__ISO26262__wp-8-1251",
+                "STD_WP__ISO26262__wp-8-1252",
             ],
             docname=None,
             lineno=None,
@@ -797,16 +791,16 @@ class TestStandards:
         need_2 = NeedsInfoType(
             target_id="Create/Maintain Safety Plan",
             type="workflow",
-            id="WF_CSTD_REQ__MT_SAFETY_PLAN",
+            id="WF__CSTD_REQ__MT_SAFETY_PLAN",
             status="draft",
-            input=["WP_PLATFORM_MGMT", "WP_ISSUE_TRACK_SYSTEM"],
-            output=["WP_MODULE_SAFETY_PLAN", "WP_PLATFORM_SAFETY_PLAN"],
+            input=["wp__platform_mgmt", "wp__issue_track_system"],
+            output=["wp__module_safety_plan", "wp__platform_safety_plan"],
             contains=[
-                "STD_REQ_ISO26262__rq-2-6461",
-                "STD_REQ_ISO26262__rq-2-6462",
-                "STD_REQ_ISO26262__rq-2-6463",
-                "STD_REQ_ISO26262__rq-2-6465",
-                "STD_REQ_ISO26262__rq-2-6468",
+                "STD_REQ__ISO26262__rq-2-6461",
+                "STD_REQ__ISO26262__rq-2-6462",
+                "STD_REQ__ISO26262__rq-2-6463",
+                "STD_REQ__ISO26262__rq-2-6465",
+                "STD_REQ__ISO26262__rq-2-6468",
             ],
             docname=None,
             lineno=None,

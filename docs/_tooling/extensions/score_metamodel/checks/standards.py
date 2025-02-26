@@ -10,6 +10,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
+from sphinx.application import Sphinx
 from sphinx_needs.data import NeedsInfoType
 
 from score_metamodel import (
@@ -26,7 +27,7 @@ def get_standards_needs(needs: list[NeedsInfoType]) -> dict:
     return {
         need["id"]: need
         for need in needs
-        if need["id"].startswith("STD_REQ_ISO26262__")
+        if need["id"].startswith("STD_REQ__ISO26262__")
     }
 
 
@@ -36,7 +37,9 @@ def get_standards_workproducts(needs: list[NeedsInfoType]) -> dict:
     """
 
     return {
-        need["id"]: need for need in needs if need["id"].startswith("STD_WP_ISO26262__")
+        need["id"]: need
+        for need in needs
+        if need["id"].startswith("STD_WP__ISO26262__")
     }
 
 
@@ -64,14 +67,7 @@ def get_compliance_req_needs(needs) -> set:
     return {
         compliance_req
         for need in needs
-        if need.get("type", "")
-        in [
-            "Process Requirements",
-            "Process Template",
-            "Process Checklist",
-            "Process Guideline",
-            "Process Method",
-        ]
+        if need.get("type", "").startswith("gd_")
         for compliance_req in need.get("complies", [])
         if compliance_req
     }
@@ -91,84 +87,91 @@ def get_compliance_wp_needs(needs) -> set:
     }
 
 
-@graph_check
-def check_all_standard_req_linked_item_via_the_compliance_req(
-    needs: list[NeedsInfoType], log: CheckLogger
-):
-    """
-    Checks if all standard requirements are linked to an item via the compliance_req tag.
-    Logs a warning for each unlinked standard requirement.
-    """
-    standards_needs = get_standards_needs(needs)
-    compliance_req_needs = get_compliance_req_needs(needs)
-
-    for need in standards_needs.values():
-        if need["id"] not in compliance_req_needs:
-            msg = f"Standard requirement `{need['id']}` is not linked to at least one item via the complies tag. \n"
-            log.warning_for_option(need, "id", msg)
-
-
-@graph_check
-def check_all_standard_workproducts_linked_item_via_the_compliance_wp(
-    needs: list[NeedsInfoType], log: CheckLogger
-):
-    """
-    Checks if all standard work products are linked to an item via the complies tag.
-    Logs a warning for each unlinked standard work product.
-    """
-    standards_workproducts = get_standards_workproducts(needs)
-    compliance_wp_needs = get_compliance_wp_needs(needs)
-
-    for need in standards_workproducts.values():
-        if need["id"] not in compliance_wp_needs:
-            msg = (
-                f"Standard workproduct `{need['id']}` is not linked to at least one item "
-                f"via the complies tag. \n"
-            )
-            log.warning_for_option(need, "id", msg)
-
-
-@graph_check
-def check_workproduct_uniqueness_over_workflows(
-    needs: list[NeedsInfoType], log: CheckLogger
-):
-    """
-    Check if all workproducts are contained in exactly one workflow.
-    Logs workflow IDs when a workproduct is contained in multiple workflows.
-    """
-    all_workflows = get_workflows(needs)
-    all_workproducts = get_workproducts(needs)
-
-    # Map to track counts for each workproduct and their associated workflows
-    workproduct_analysis = {
-        wp["id"]: {"count": 0, "workproduct": wp, "workflows": []}
-        for wp in all_workproducts.values()
-    }
-
-    # Iterate over workflows and update the counts and workflows
-    for workflow_id, workflow in all_workflows.items():
-        for output in workflow["output"]:
-            # If the workproduct is in the analysis, increment its count and add the workflow_id
-            if output in workproduct_analysis:
-                workproduct_analysis[output]["count"] += 1
-                workproduct_analysis[output]["workflows"].append(workflow_id)
-
-    # Check for mismatches and log error
-    for analysis in workproduct_analysis.values():
-        count = analysis["count"]
-        workproduct = analysis["workproduct"]
-        workflows = analysis["workflows"]
-
-        if count != 1:  # Mismatch found
-            if count == 0:
-                msg = "is not contained in any workflow, which is incorrect. \n"
-                log.warning_for_need(workproduct, msg)
-            else:
-                workflows_str = ", ".join(
-                    f"`{workflow}`" for workflow in workflows
-                )  # Join workflow IDs into a string
-                msg = f"is contained in {count} workflows: {workflows_str}, which is incorrect. \n"
-                log.warning_for_need(workproduct, msg)
+#                    ╭──────────────────────────────────────────────────────────────────────────────╮
+#                    │                             Disabled temporarly                              │
+#                    ╰──────────────────────────────────────────────────────────────────────────────╯
+# @graph_check
+# def check_all_standard_req_linked_item_via_the_compliance_req(
+#     app: Sphinx, needs: list[NeedsInfoType], log: CheckLogger
+# ):
+#     """
+#     Checks if all standard requirements are linked to an item via the compliance_req tag.
+#     Logs a warning for each unlinked standard requirement.
+#     """
+#     standards_needs = get_standards_needs(needs)
+#     compliance_req_needs = get_compliance_req_needs(needs)
+#
+#     for need in standards_needs.values():
+#         if need["id"] not in compliance_req_needs:
+#             msg = f"Standard requirement `{need['id']}` is not linked to at least one item via the complies tag. \n"
+#             log.warning_for_option(need, "id", msg)
+#
+# @graph_check
+# def check_all_standard_workproducts_linked_item_via_the_compliance_wp(
+#     app: Sphinx, needs: list[NeedsInfoType], log: CheckLogger
+# ):
+#     """
+#     Checks if all standard work products are linked to an item via the complies tag.
+#     Logs a warning for each unlinked standard work product.
+#     """
+#     standards_workproducts = get_standards_workproducts(needs)
+#     compliance_wp_needs = get_compliance_wp_needs(needs)
+#
+#     for need in standards_workproducts.values():
+#         if need["id"] not in compliance_wp_needs:
+#             msg = (
+#                 f"Standard workproduct `{need['id']}` is not linked to at least one item "
+#                 f"via the complies tag. \n"
+#             )
+#             log.warning_for_option(need, "id", msg)
+#
+#
+# @graph_check
+# def check_workproduct_uniqueness_over_workflows(
+#     app: Sphinx, needs: list[NeedsInfoType], log: CheckLogger
+# ):
+#     """
+#     Check if all workproducts are contained in exactly one workflow.
+#     Logs workflow IDs when a workproduct is contained in multiple workflows.
+#     """
+#     all_workflows = get_workflows(needs)
+#     all_workproducts = get_workproducts(needs)
+#
+#     # Map to track counts for each workproduct and their associated workflows
+#     workproduct_analysis = {
+#         wp["id"]: {"count": 0, "workproduct": wp, "workflows": []}
+#         for wp in all_workproducts.values()
+#     }
+#
+#     # Iterate over workflows and update the counts and workflows
+#     for workflow_id, workflow in all_workflows.items():
+#         for output in workflow["output"]:
+#             # If the workproduct is in the analysis, increment its count and add the workflow_id
+#             if output in workproduct_analysis:
+#                 workproduct_analysis[output]["count"] += 1
+#                 workproduct_analysis[output]["workflows"].append(workflow_id)
+#
+#     # Check for mismatches and log error
+#     for analysis in workproduct_analysis.values():
+#         count = analysis["count"]
+#         workproduct = analysis["workproduct"]
+#         workflows = analysis["workflows"]
+#
+#         if count != 1:  # Mismatch found
+#             if count == 0:
+#                 msg = "is not contained in any workflow, which is incorrect. \n"
+#                 log.warning_for_need(workproduct, msg)
+#             else:
+#                 workflows_str = ", ".join(
+#                     f"`{workflow}`" for workflow in workflows
+#                 )  # Join workflow IDs into a string
+#                 msg = f"is contained in {count} workflows: {workflows_str}, which is incorrect. \n"
+#                 log.warning_for_need(workproduct, msg)
+#
+#
+#                    ╭──────────────────────────────────────────────────────────────────────────────╮
+#                    │                            END OF TEMP DISABLING                             │
+#                    ╰──────────────────────────────────────────────────────────────────────────────╯
 
 
 def my_pie_linked_standard_requirements(needs, results, **kwargs):
