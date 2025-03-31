@@ -383,7 +383,6 @@ needs_types:
     mandatory_links:
       implements: "^feat_arc_int_op__.+$"
       included_by: "^comp_arc_int__.+$"
-      implements: "^feat_arc_int_op__.*$"
 
   review_header:
     prefix: "review__header"
