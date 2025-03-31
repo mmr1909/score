@@ -34,6 +34,7 @@ def setup(app: Sphinx) -> dict:
     }
 
 
+# req-Id: gd_req__req__attr_impl
 def add_source_link(app: Sphinx, env) -> None:
     """
     'Main' function that facilitates the running of all other functions
@@ -59,7 +60,8 @@ def add_source_link(app: Sphinx, env) -> None:
                     # the needs gets 're-evaluated'.
                     need = needs_copy[id]  # NeedsInfoType
                     Needs_Data.remove_need(need["id"])
-                    need["source_code_link"] = ",".join(link)
+                    # extra_options are only available at runtime
+                    need["source_code_link"] = ",".join(link)  # type: ignore
                     Needs_Data.add_need(need)
                 except KeyError:
                     # NOTE: manipulating link to remove git-hash,
@@ -68,7 +70,8 @@ def add_source_link(app: Sphinx, env) -> None:
                         x.replace(GITHUB_BASE_URL, "").split("/", 1)[-1] for x in link
                     ]
                     LOGGER.warning(
-                        f"Could not find {id} in the needs id's. Found in file(s): {files}",
+                        f"Could not find {id} in the needs id's. "
+                        f"Found in file(s): {files}",
                         type="score_source_code_linker",
                     )
         except Exception as e:

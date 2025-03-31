@@ -15,6 +15,19 @@
 needs_types_base_options:
   optional_options:
     source_code_link: "^https://github.com/eclipse-score/score/blob/.*$"
+  # Custom semantic validation rules
+  prohibited_words:
+    title:
+      - shall
+      - must
+      - will
+    content:
+      - just
+      - about
+      - really
+      - some
+      - thing
+      - absolutely
 
 needs_types:
 
@@ -26,7 +39,7 @@ needs_types:
     title: "Standard Requirement"
     prefix: "std_req__"
     mandatory_options:
-      id: "std_req__(iso26262|iso21434|isopas8926|aspice_40)__[0-9a-zA-Z_-]*$"
+      id: "std_req__(iso26262|isosae21434|isopas8926|aspice_40)__[0-9a-zA-Z_-]*$"
       status: "^(valid)$"
     optional_links:
       links: "^.*$"
@@ -35,7 +48,7 @@ needs_types:
     title: "Standard Work Product"
     prefix: "std_wp__"
     mandatory_options:
-      id: "std_wp__(iso26262|iso21434|isopas8926|aspice_40)__[0-9a-z_]*$"
+      id: "std_wp__(iso26262|isosae21434|isopas8926|aspice_40)__[0-9a-z_]*$"
       status: "^(valid)$"
   # Workflow
   workflow:
@@ -61,7 +74,7 @@ needs_types:
       id: "^gd_req__[0-9a-z_]*$"
       status: "^(valid|draft)$"
     optional_links:
-      complies: "^std_req__(iso26262|iso21434|isopas8926|aspice_40)__.*$"
+      complies: "^std_req__(iso26262|isosae21434|isopas8926|aspice_40)__.*$"
       satisfies: "^wf__.*$"
 
   gd_temp:
@@ -71,7 +84,7 @@ needs_types:
       id: "^gd_temp__[0-9a-z_]*$"
       status: "^(valid|draft)$"
     optional_links:
-      complies: "std_req__(iso26262|iso21434|isopas8926|aspice_40)__.*$"
+      complies: "std_req__(iso26262|isodae21434|isopas8926|aspice_40)__.*$"
 
   gd_chklst:
     title: "Process Checklist"
@@ -80,7 +93,7 @@ needs_types:
       id: "^gd_chklst__[0-9a-z_]*$"
       status: "^(valid|draft)$"
     optional_links:
-      complies: "std_req__(iso26262|iso21434|isopas8926|aspice_40)__.*$"
+      complies: "std_req__(iso26262|isodae21434|isopas8926|aspice_40)__.*$"
 
   gd_guidl:
     title: "Process Guideline"
@@ -89,7 +102,7 @@ needs_types:
       id: "^gd_guidl__[0-9a-z_]*$"
       status: "^(valid|draft)$"
     optional_links:
-      complies: "std_req__(iso26262|iso21434|isopas8926|aspice_40)__.*$"
+      complies: "std_req__(iso26262|isosae21434|isopas8926|aspice_40)__.*$"
 
   gd_method:
     title: "Process Method"
@@ -98,8 +111,8 @@ needs_types:
       id: "^gd_meth__[0-9a-z_]*$"
       status: "^(valid|draft)$"
     optional_links:
-      complies: "std_req__(iso26262|iso21434|isopas8926|aspice_40)__.*$"
-  # Score Workproduct
+      complies: "std_req__(iso26262|isosae21434|isopas8926|aspice_40)__.*$"
+  # S-CORE Workproduct
   workproduct:
     title: "Workproduct"
     prefix: "wp__"
@@ -107,7 +120,7 @@ needs_types:
       id: "^wp__[0-9a-z_]*$"
       status: "^(valid|draft)$"
     optional_links:
-      complies: "std_(wp__iso26262|wp__iso21434|wp__isopas8926|iic_aspice_40)__.*$"
+      complies: "std_(wp__iso26262|wp__isosae21434|wp__isopas8926|iic_aspice_40)__.*$"
   # Role
   role:
     title: "Role"
@@ -132,7 +145,7 @@ needs_types:
       status: "^(valid|draft)$"
 
   ##############################################################################
-  # Score Metamodel
+  # S-CORE Metamodel
   ##############################################################################
   # General
   document:
@@ -144,6 +157,10 @@ needs_types:
     optional_options:
       safety: "^(QM|ASIL_B|ASIL_D)$"
       realizes: "^wp__.+$"
+  # The following 3 guidance requirements enforce the requirement structure and attributes:
+  # req-Id: gd_req__req__structure
+  # req-Id: gd_req__requirements_attr_description
+  # req-Id: gd_req__req__linkage
   # Requirements
   stkh_req:
     title: "Stakeholder Requirement"
@@ -162,7 +179,6 @@ needs_types:
       testcovered: "^(YES|NO)$"
       hash: "^.*$"
 
-
   feat_req:
     title: "Feature Requirement"
     prefix: "feat_req__"
@@ -174,6 +190,7 @@ needs_types:
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
+      # req-Id: gd_req__req__linkage_fulfill
       satisfies: "^stkh_req__.*$"
     optional_options:
       codelink: "^.*$"
@@ -242,13 +259,13 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^feat_arc_sta__[0-9a-z_]*$"
+      id: "^feat_arc_sta__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
-      fulfils: "^feat_req__.*$"
-      includes: "^feat_arc_int(_op)*__.*$"
+      fulfils: "^feat_req__.+$"
+      includes: "^feat_arc_int(_op)*__.+$"
 
   feat_arc_dyn:
     title: "Feature Architecture Dynamic View"
@@ -256,12 +273,12 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^feat_arc_dyn__[0-9a-z_]*$"
+      id: "^feat_arc_dyn__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
-      fulfils: "^feat_req__.*$"
+      fulfils: "^feat_req__.+$"
 
   feat_arc_int:
     title: "Feature Architecture Interfaces"
@@ -269,14 +286,14 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^feat_arc_int__[0-9a-z_]*$"
+      id: "^feat_arc_int__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
-      fulfils: "^feat_req__.*$"
+      fulfils: "^feat_req__.+$"
     optional_links:
-      includes: "^feat_arc_int_op__.*$"
+      includes: "^feat_arc_int_op__.+$"
 
   feat_arc_int_op:
     title: "Feature Architecture Interface Operation"
@@ -284,10 +301,30 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^feat_arc_int_op__[0-9a-z_]*$"
+      id: "^feat_arc_int_op__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
+    mandatory_links:
+      included_by: "^feat_arc_int__.+$"
+
+  mod_view_sta:
+    title: "Module Architecture Static View"
+    prefix: "mod_view_sta__"
+    color: "#FEDCD2"
+    style: "card"
+    mandatory_options:
+      id: "^mod_view_sta__[0-9a-z_]+$"
+    mandatory_links:
+      includes: "^comp_arc_sta__.+$"
+
+  mod_view_dyn:
+    title: "Module Architecture Dynamic View"
+    prefix: "mod_view_dyn__"
+    color: "#FEDCD2"
+    style: "card"
+    mandatory_options:
+      id: "^mod_view_dyn__[0-9a-z_]+$"
 
   comp_arc_sta:
     title: "Component Architecture Static View"
@@ -295,16 +332,16 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^comp_arc_sta__[0-9a-z_]*$"
+      id: "^comp_arc_sta__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
-      fulfils: "^comp_req__.*$"
+      fulfils: "^comp_req__.+$"
     optional_links:
-      implements: "^comp_arc_int(_op)*__.*$"
-      includes: "^comp_arc_sta__.*$"
-      uses: "^comp_arc_int(_op)*__.*$"
+      implements: "^comp_arc_int(_op)*__.+$"
+      includes: "^comp_arc_sta__.+$"
+      uses: "^comp_arc_int(_op)*__.+$"
 
   comp_arc_dyn:
     title: "Component Architecture Dynamic View"
@@ -312,12 +349,12 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^comp_arc_dyn__[0-9a-z_]*$"
+      id: "^comp_arc_dyn__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
-      fulfils: "^comp_req__.*$"
+      fulfils: "^comp_req__.+$"
 
   comp_arc_int:
     title: "Component Architecture Interfaces"
@@ -325,14 +362,13 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^comp_arc_int__[0-9a-z_]*$"
+      id: "^comp_arc_int__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
+      language: "^(cpp|rust)$"
     mandatory_links:
-      fulfils: "^comp_req__.*$"
-    optional_links:
-      includes: "^comp_arc_int_op__.*$"
+      fulfils: "^comp_req__.+$"
 
   comp_arc_int_op:
     title: "Component Architecture Interface Operation"
@@ -340,11 +376,13 @@ needs_types:
     color: "#FEDCD2"
     style: "card"
     mandatory_options:
-      id: "^comp_arc_int_op__[0-9a-z_]*$"
+      id: "^comp_arc_int_op__[0-9a-z_]+$"
       security: "^(YES|NO)$"
       safety: "^(QM|ASIL_B|ASIL_D)$"
       status: "^(valid|invalid)$"
     mandatory_links:
+      implements: "^feat_arc_int_op__.+$"
+      included_by: "^comp_arc_int__.+$"
       implements: "^feat_arc_int_op__.*$"
 
   review_header:
@@ -416,7 +454,7 @@ needs_extra_links:
   ##############################################################
   # Workflow
   contains:
-    incoming: "is contained by"
+    incoming: "contained by"
     outgoing: "contains"
 
   has:
@@ -450,16 +488,16 @@ needs_extra_links:
     outgoing: "complies"
 
   ##############################################################
-  #  Score Metamodel
+  #  S-CORE Metamodel
   ##############################################################
   # Requirements
   satisfies:
-    incoming: "is satisfied by"
+    incoming: "satisfied by"
     outgoing: "satisfies"
 
   # Architecture
   fulfils:
-    incoming: "is fulfilled by"
+    incoming: "fulfilled by"
     outgoing: "fulfils"
 
   implements:
@@ -471,8 +509,12 @@ needs_extra_links:
     outgoing: "uses"
 
   includes:
-    incoming: "is included in"
+    incoming: "included by"
     outgoing: "includes"
+
+  included_by:
+    incoming: "includes"
+    outgoing: "included by"
 ##############################################################
 # Graph Checks
 # The graph checks focus on the relation of the needs and their attributes.
@@ -489,10 +531,13 @@ needs_extra_links:
 #   - condition: defines the condition that should be checked
 #     - [and / or / xor / not]
 ##############################################################
+# req-Id: gd_req__req__linkage_architecture
+# req-Id: gd_req__req__linkage_safety
 graph_checks:
-  comp_req_safety:
+  # req-Id: gd_req__req__linkage_safety
+  req_safety_linkage:
     needs:
-      include: "comp_req"
+      include: "comp_req, feat_req"
       condition:
         and:
           - "safety != QM"
@@ -502,16 +547,22 @@ graph_checks:
         and:
           - "safety != QM"
           - "status == valid"
-      fulfils:
-        and:
-          - "safety != QM"
-          - "status == valid"
-  feat_req_safety:
+  req_linkage:
     needs:
-      include: "feat_req"
+      include: "comp_req, feat_req"
+      condition: "status == valid"
+    check:
+      satisfies: "status == valid"
+  # req-Id: gd_req__req__linkage_architecture
+  arch_safety_linkage:
+    needs:
+      include: "comp_req, feat_req"
       condition:
         and:
           - "safety != QM"
           - "status == valid"
     check:
-      satisfies: "status == valid"
+      fulfils:
+        and:
+          - "safety != QM"
+          - "status == valid"

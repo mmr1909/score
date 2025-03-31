@@ -12,8 +12,8 @@
 # *******************************************************************************
 import importlib
 import pkgutil
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from ruamel.yaml import YAML
 from sphinx.application import Sphinx
@@ -25,7 +25,7 @@ from .log import CheckLogger
 logger = logging.get_logger(__name__)
 
 local_checks: list[Callable[[Sphinx, NeedsInfoType, CheckLogger], None]] = []
-graph_checks: list[Callable[[Sphinx, dict[str, NeedsInfoType], CheckLogger], None]] = []
+graph_checks: list[Callable[[Sphinx, list[NeedsInfoType], CheckLogger], None]] = []
 
 
 def discover_checks():
@@ -48,7 +48,7 @@ def local_check(func: Callable[[Sphinx, NeedsInfoType, CheckLogger], None]):
     return func
 
 
-def graph_check(func: Callable[[Sphinx, dict[str, NeedsInfoType], CheckLogger], None]):
+def graph_check(func: Callable[[Sphinx, list[NeedsInfoType], CheckLogger], None]):
     """Use this decorator to mark a function as a graph check."""
     logger.debug(f"new graph_check: {func}")
     graph_checks.append(func)
@@ -64,7 +64,7 @@ def _run_checks(app: Sphinx, exception: Exception | None) -> None:
 
     logger.debug(f"Running checks for {len(needs_all_needs)} needs")
 
-    prefix = Path(app.srcdir).relative_to(Path.cwd())
+    prefix = str(Path(app.srcdir).relative_to(Path.cwd()))
 
     log = CheckLogger(logger, prefix)
 
@@ -76,7 +76,7 @@ def _run_checks(app: Sphinx, exception: Exception | None) -> None:
 
     # Graph-Based checks: These warnings require a graph of all other needs to
     # be checked.
-    needs = needs_all_needs.values()
+    needs = list(needs_all_needs.values())
     for check in graph_checks:
         check(app, needs, log)
 
@@ -98,8 +98,13 @@ def load_metamodel_data():
     yaml_path = Path(__file__).resolve().parent / "metamodel.yaml"
 
     yaml = YAML()
-    with open(yaml_path, "r", encoding="utf-8") as f:
+    with open(yaml_path, encoding="utf-8") as f:
         data = yaml.load(f)
+
+    # Access the custom validation block
+    prohibited_words_dict = data.get("needs_types_base_options", {}).get(
+        "prohibited_words", {}
+    )
 
     types_dict = data.get("needs_types", {})
     links_dict = data.get("needs_extra_links", {})
@@ -107,6 +112,11 @@ def load_metamodel_data():
 
     global_base_options = data.get("needs_types_base_options", {})
     global_base_options_optional_opts = global_base_options.get("optional_options", {})
+
+    # Get the list of stop-words and weak-words
+    # Get the stop_words and weak_words as separate lists
+    stop_words_list = prohibited_words_dict.get("title", [])
+    weak_words_list = prohibited_words_dict.get("content", [])
 
     # Default options by sphinx, sphinx-needs or anything else we need to account for
     default_options_list = default_options()
@@ -164,10 +174,13 @@ def load_metamodel_data():
 
     # We have to remove all 'default options' from the extra options.
     # As otherwise sphinx errors, due to an option being registered twice.
-    # They are still inside the extra options we extract to enable constraint checking via regex
+    # They are still inside the extra options we extract to enable
+    # constraint checking via regex
     needs_extra_options = sorted(all_options - set(default_options_list))
 
     return {
+        "stop_words": stop_words_list,
+        "weak_words": weak_words_list,
         "needs_types": needs_types_list,
         "needs_extra_links": needs_extra_links_list,
         "needs_extra_options": needs_extra_options,
@@ -176,7 +189,10 @@ def load_metamodel_data():
 
 
 def default_options() -> list[str]:
-    "Helper function to get a list of all default options defined by sphinx, sphinx-needs etc."
+    """
+    Helper function to get a list of all default options defined by
+    sphinx, sphinx-needs etc.
+    """
     return [
         "target_id",
         "id",
@@ -229,6 +245,8 @@ def setup(app: Sphinx):
     app.config.needs_extra_links = metamodel["needs_extra_links"]
     app.config.needs_extra_options = metamodel["needs_extra_options"]
     app.config.graph_checks = metamodel["needs_graph_check"]
+    app.config.stop_words = metamodel["stop_words"]
+    app.config.weak_words = metamodel["weak_words"]
 
     discover_checks()
 
