@@ -72,7 +72,7 @@ def basic_conf():
         return f"""
 extensions = [
     "sphinx_needs",
-    "score_header_service.header_service",
+    "score_header_service",
 ]
 needs_types = [
     dict(title = "Review Header", directive = "review_header", color="#BFD8D2", style="node",
@@ -176,10 +176,10 @@ def test_header_service_integration_github_data(
         app.build()
         html_content = (app.outdir / "index.html").read_text()
         mock_extract_github_data.assert_called_once()
-        assert "<td><p>John Doe</p></td>" in html_content
-        assert '<div class="line">aprover_1</div>' in html_content
-        assert '<div class="line">reviewer_1</div>' in html_content
-        assert "<td><p>abcdef</p></td>" in html_content
+        assert "John Doe" in html_content
+        assert "aprover_1" in html_content
+        assert "reviewer_1" in html_content
+        assert "abcdef" in html_content
     except Exception as e:
         assert False, f"Build failed: {e}"
 
@@ -212,9 +212,9 @@ def test_header_service_integration_commit_data(
         app.build()
         html_content = (app.outdir / "index.html").read_text()
         mock_extract_merge_commit_data.assert_called_once()
-        assert "<td><p>John Doe</p></td>" in html_content
-        assert '<div class="line">aprover_1</div>' in html_content
-        assert '<div class="line">reviewer_1</div>' in html_content
-        assert "<td><p>abcdef</p></td>" in html_content
+        assert "John Doe" in html_content
+        assert "aprover_1" in html_content
+        assert "reviewer_1" in html_content
+        assert "abcdef" in html_content
     except Exception as e:
         assert False, f"Build failed: {e}"

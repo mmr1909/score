@@ -39,6 +39,7 @@ needs_layouts = {
         },
     },
     "focus": {
+        # Just show content without title
         "grid": "content",
         "layout": {},
     },

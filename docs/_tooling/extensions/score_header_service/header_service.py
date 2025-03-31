@@ -27,6 +27,7 @@ from github import (
     Repository,
 )
 from sphinx_needs.services.base import BaseService
+from sphinx.environment import BuildEnvironment
 from sphinx_needs.data import SphinxNeedsData
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
@@ -35,25 +36,25 @@ from sphinx.util.docutils import SphinxDirective
 APPROVER_TEAMS = ["automotive-score-committers"]
 
 
-def setup(app: Sphinx) -> dict[str, str | bool]:
-    """Register the header service with the Sphinx application.
+# def setup(app: Sphinx) -> dict[str, str | bool]:
+#     """Register the header service with the Sphinx application.
 
-    :param app: The Sphinx application instance.
-    """
-    app.connect("env-before-read-docs", register)
-    return {
-        "version": "0.1",
-        "parallel_read_safe": True,
-        "parallel_write_safe": True,
-    }
+#     :param app: The Sphinx application instance.
+#     """
+#     app.connect("env-before-read-docs", register)
+#     return {
+#         "version": "0.1",
+#         "parallel_read_safe": True,
+#         "parallel_write_safe": True,
+#     }
 
 
-def register(app: Sphinx, env: SphinxNeedsData, a: str) -> None:
+def register(app: Sphinx, env: BuildEnvironment, _: str) -> None:
     """Register the HeaderService with the Sphinx application environment.
 
     :param app: The Sphinx application instance.
-    :param env: The Sphinx environment.
-    :param a: Additional arguments.
+    :param env: The Sphinx build environment.
+    :param _: Additional argument not used.
     """
     app.add_config_value("header_service_use_github_data", True, "env")
     data = SphinxNeedsData(env)
