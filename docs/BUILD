@@ -128,7 +128,7 @@ py_library(
 filegroup(
     name = "test_rst_files",
     srcs = glob([
-        "_tooling/extensions/score_metamodel/tests/rst/*.rst",
+        "_tooling/extensions/score_metamodel/tests/rst/**/*.rst",
         "_tooling/extensions/score_plantuml.py",
         "_tooling/extensions/score_draw_uml_funcs/**/*.py",
         "_tooling/extensions/score_source_code_linker/**/*.py",
@@ -153,10 +153,10 @@ score_py_pytest(
     name = "score_metamodel_test",
     size = "small",
     srcs = glob(["_tooling/extensions/score_metamodel/tests/**/*.py"]),
-    visibility = ["//visibility:public"],
     data = [
         ":test_rst_files",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":score_metamodel",
     ],

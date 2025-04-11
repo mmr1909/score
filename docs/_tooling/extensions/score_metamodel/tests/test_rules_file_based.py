@@ -24,7 +24,7 @@ RST_DIR = Path(__file__).absolute().parent / "rst"
 DOCS_DIR = Path(__file__).absolute().parent.parent.parent.parent.parent
 TOOLING_DIR_NAME = "_tooling"
 
-RST_FILES = [str(f.name) for f in Path(RST_DIR).rglob("*.rst")]
+RST_FILES = [str(f.relative_to(RST_DIR)) for f in Path(RST_DIR).rglob("*.rst")]
 
 
 @pytest.fixture
@@ -109,7 +109,7 @@ def extract_test_data(rst_file: Path) -> list[InfoElement] | None:
 
 
 @pytest.mark.parametrize("rst_file", RST_FILES)
-def test_dummy_need(
+def test_check_rules(
     rst_file: str, sphinx_app_setup: Callable[[Path], SphinxTestApp]
 ) -> None:
     assert (
@@ -117,17 +117,19 @@ def test_dummy_need(
     ), "Unable to extract test data"
     app: SphinxTestApp = sphinx_app_setup(RST_DIR / rst_file)
     try:
-        os.chdir(app.srcdir) # Change working directory to the source directory
+        os.chdir(app.srcdir)  # Change working directory to the source directory
         app.build()
         warn_text: str = app.warning.getvalue()
         for test in test_data:
             for expected in test.expected:
                 assert (
-                    f"{Path(rst_file).name}:{test.lineno}: WARNING: {expected}" in warn_text
+                    f"{Path(rst_file).name}:{test.lineno}: WARNING: {expected}"
+                    in warn_text
                 ), f"Expected warning: {[expected]} not found"
             for not_expected in test.not_expected:
                 assert (
-                    f"{Path(rst_file).name}:{test.lineno}: WARNING: {not_expected}" not in warn_text
+                    f"{Path(rst_file).name}:{test.lineno}: WARNING: {not_expected}"
+                    not in warn_text
                 ), f"Unexpected warning: {[not_expected]} found"
     except Exception as e:
         assert False, f"Build failed: {e}"
