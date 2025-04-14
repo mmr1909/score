@@ -11,24 +11,26 @@
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
 
+import os
+import shutil
 from collections.abc import Callable
 from dataclasses import dataclass, field
-import os
-from sphinx.testing.util import SphinxTestApp
-from sphinx_needs.data import SphinxNeedsData
-import pytest
 from pathlib import Path
-import shutil
+
+import pytest
+from sphinx.testing.util import SphinxTestApp
 
 RST_DIR = Path(__file__).absolute().parent / "rst"
 DOCS_DIR = Path(__file__).absolute().parent.parent.parent.parent.parent
 TOOLING_DIR_NAME = "_tooling"
 
+### List of relative paths of all rst files in RST_DIR
 RST_FILES = [str(f.relative_to(RST_DIR)) for f in Path(RST_DIR).rglob("*.rst")]
 
 
 @pytest.fixture
 def sphinx_base_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    ### Create a temporary directory for Sphinx and copy all necessary files.
     base_dir: Path = tmp_path_factory.mktemp("docs")
     shutil.copy(DOCS_DIR / "conf.py", base_dir)
     shutil.copytree(
@@ -42,7 +44,10 @@ def sphinx_base_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 @pytest.fixture
 def index_file() -> Callable[[Path], str]:
+    ### Returns a function that creates an index.rst file.
     def _create_rst_file(rst_file: Path) -> str:
+        ### returns an index.rst file with a toctree
+        # that refers to the given rst file.
         index_rst: str = f"""
 .. toctree::
    {rst_file.stem}
@@ -56,7 +61,10 @@ def index_file() -> Callable[[Path], str]:
 def sphinx_app_setup(
     sphinx_base_dir: Path, index_file: Callable[[Path], str]
 ) -> Callable[[Path], SphinxTestApp]:
+    ### Returns a function that creates a SphinxTestApp instance.
     def _create_app(rst_file: Path) -> SphinxTestApp:
+        ### Create a SphinxTestApp instance.
+        # The source directory is set to the temporary directory.
         shutil.copy(rst_file, sphinx_base_dir)
         index_context: str = index_file(rst_file)
         (sphinx_base_dir / "index.rst").write_text(index_context)
@@ -72,20 +80,29 @@ def sphinx_app_setup(
 
 
 @dataclass
-class InfoElement:
+class WarningInfo:
+    #### Class to hold information about warnings
+    # The class contains the line number and the expected and not expected warnings.
     lineno: int = 0
     expected: list[str] = field(default_factory=list)
     not_expected: list[str] = field(default_factory=list)
 
 
 def extract_warning(line: str) -> str:
+    #### Extract the warning message from the line
+    # The line format is "#EXPECT: <warning message>"
+    # or "#EXPECT-NOT: <warning message>"
     return line.split(": ", 1)[1].strip()
 
 
-def extract_test_data(rst_file: Path) -> list[InfoElement] | None:
-    with open(rst_file, "r") as f:
-        statements: list[InfoElement] = []
-        test_info: InfoElement | None = None
+def extract_test_data(rst_file: Path) -> list[WarningInfo] | None:
+    ### Extract test data from the given rst file
+    # The function returns a list of WarningInfo objects
+    # containing the line number and the expected and not expected warnings.
+    # If no test data is found, it returns None.
+    with open(rst_file) as f:
+        statements: list[WarningInfo] = []
+        test_info: WarningInfo | None = None
         for no, line in enumerate(f, start=1):
             if line.startswith(".. "):  # Beginning of new need
                 if test_info:
@@ -94,7 +111,7 @@ def extract_test_data(rst_file: Path) -> list[InfoElement] | None:
                 test_info = None
             elif line.startswith("#EXPECT:") or line.startswith("#EXPECT-NOT:"):
                 if test_info is None:
-                    test_info = InfoElement()
+                    test_info = WarningInfo()
                 target_list = (
                     test_info.expected
                     if line.startswith("#EXPECT:")
@@ -105,33 +122,29 @@ def extract_test_data(rst_file: Path) -> list[InfoElement] | None:
         if test_info:
             print("ERROR: Teststatement without according need found")
         return statements
-    return None
 
 
 @pytest.mark.parametrize("rst_file", RST_FILES)
 def test_check_rules(
     rst_file: str, sphinx_app_setup: Callable[[Path], SphinxTestApp]
 ) -> None:
+    ### Test function to check rules in the given rst file
+    # The function uses the SphinxTestApp to build the documentation
+    # and checks for the expected/unexpected warnings.
     assert (
         test_data := extract_test_data(RST_DIR / rst_file)
     ), "Unable to extract test data"
     app: SphinxTestApp = sphinx_app_setup(RST_DIR / rst_file)
-    try:
-        os.chdir(app.srcdir)  # Change working directory to the source directory
-        app.build()
-        warn_text: str = app.warning.getvalue()
-        for test in test_data:
-            for expected in test.expected:
-                assert (
-                    f"{Path(rst_file).name}:{test.lineno}: WARNING: {expected}"
-                    in warn_text
-                ), f"Expected warning: {[expected]} not found"
-            for not_expected in test.not_expected:
-                assert (
-                    f"{Path(rst_file).name}:{test.lineno}: WARNING: {not_expected}"
-                    not in warn_text
-                ), f"Unexpected warning: {[not_expected]} found"
-    except Exception as e:
-        assert False, f"Build failed: {e}"
-    finally:
-        app.cleanup()
+    os.chdir(app.srcdir)  # Change working directory to the source directory
+    app.build()
+    warn_text: str = app.warning.getvalue()
+    for test in test_data:
+        for expected in test.expected:
+            assert (
+                f"{Path(rst_file).name}:{test.lineno}: WARNING: {expected}" in warn_text
+            ), f"Expected warning: {[expected]} not found"
+        for not_expected in test.not_expected:
+            assert (
+                f"{Path(rst_file).name}:{test.lineno}: WARNING: {not_expected}"
+                not in warn_text
+            ), f"Unexpected warning: {[not_expected]} found"

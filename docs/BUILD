@@ -129,11 +129,7 @@ filegroup(
     name = "test_rst_files",
     srcs = glob([
         "_tooling/extensions/score_metamodel/tests/rst/**/*.rst",
-        "_tooling/extensions/score_plantuml.py",
-        "_tooling/extensions/score_draw_uml_funcs/**/*.py",
-        "_tooling/extensions/score_source_code_linker/**/*.py",
-        "_tooling/extensions/score_layout/**/*.py",
-        "_tooling/extensions/score_header_service/**/*.py",
+        "_tooling/extensions/**/*.py",
         "conf.py",
     ]),
     visibility = ["//visibility:public"],
